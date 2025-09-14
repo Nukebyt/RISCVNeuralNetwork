@@ -9,7 +9,7 @@ This project is the outcome of an intensive 10-day workshop on Edge-AI deploymen
 
 ---
 ## Project Structure
-RISCVNeuralNetwork
+```RISCVNeuralNetwork
 ├── Datasets
 │ ├── 50_Startups.csv
 │ ├── Social_Network_Ads.csv
