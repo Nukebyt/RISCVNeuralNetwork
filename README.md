@@ -69,10 +69,29 @@ In this project, we aim to overcome these challenges by developing a heavily qua
 ├── svm_model_mnist.h
 ├── svm_model_startup.h
 ├── svmtrainingset.png
+├── knnandsvmheader.ipynb
 └── test_images.h
 ```
 ---
 ## Workshop Flow
+
+We start by a hands-on demonstration of linear regression with gradient descent.
+In the notebook [gradientdescent](gradientdescent.ipynb), I demonstrate the implementation of Linear Regression using Gradient Descent from scratch in Python. It uses a dataset (studentscores.csv) that records the number of study hours and corresponding exam scores, with the objective of predicting scores based on hours studied. The relationship between the two variables is first visualized through scatter plots, highlighting the linear correlation. **A custom Model class is then built to perform regression, featuring methods for training (fit), prediction (predict), and parameter updates (update_weights) using gradient descent optimization**. During training, the slope and intercept are iteratively adjusted according to the specified learning rate and number of iterations, and the resulting regression line is compared with the actual data points. **The model outputs both the predicted scores and the learned parameters, and the results are displayed graphically by overlaying the fitted line on the scatter plot.** Additionally, the notebook extends the work with another LinearRegression class that uses animation tools to visualize how gradient descent gradually converges to the best-fit line.(linear_regression_A.gif).
+
+Next, in the notebook [knnandsvmheader.ipynb](knnandsvmheader.ipynb) we focus on implementing and comparing machine learning models, specifically **K-Nearest Neighbors (KNN) and Support Vector Machines (SVM)**, for classification tasks. The models are trained using both linear and radial basis function (RBF) kernels to analyze performance differences. 
+
+We see that **for Edge AI applications, SVM is superior to KNN because it requires less memory, has faster inference, and provides better generalization**. 
+
+Once trained, an SVM only needs to store the support vectors (a subset of the training data) and the learned weights. This usually results in a compact model.
+KNN needs to store all training samples since classification requires comparing a new input against every stored sample. This quickly becomes infeasible for edge devices with limited memory.
+
+After training, **the important model parameters—such as weights and biases—are extracted and saved into a .header file format**. This file can then be integrated into Freedom Studio, enabling deployment of the trained models on embedded RISC-V systems. Then we deploy it in Freedom Studio using the code snippet:
+
+```
+
+```
+
+Here I learnt how machine learning models can be developed in Python, processed into a format suitable for low-level embedded platforms, and ultimately applied in real-world hardware implementations.
 
 
 ---
