@@ -17,7 +17,7 @@ This project is the outcome of an intensive 10-day workshop on Edge-AI deploymen
 
 The VSDSquadron PRO RISC-V development boards features a RISC-V SoC with the following capabilities:
 
-1. 48-lead 6x6 QFN package
+1. 48-lead 6x6 QFN package
 
 2. On-board 16MHz crystal
 
@@ -29,7 +29,7 @@ The VSDSquadron PRO RISC-V development boards features a RISC-V SoC with the fol
 
 6. 32 Mbit Off-Chip (ISSI SPI Flash)
    
-7. USB-C type for Program, Debug, and Serial Communication
+7. USB-C type for Program, Debug, and Serial Communication
 
 ---
 
@@ -76,23 +76,93 @@ In this project, we aim to overcome these challenges by developing a heavily qua
 ## Workshop Flow
 
 We start by a hands-on demonstration of linear regression with gradient descent.
-In the notebook [gradientdescent](gradientdescent.ipynb), I demonstrate the implementation of Linear Regression using Gradient Descent from scratch in Python. It uses a dataset (studentscores.csv) that records the number of study hours and corresponding exam scores, with the objective of predicting scores based on hours studied. The relationship between the two variables is first visualized through scatter plots, highlighting the linear correlation. **A custom Model class is then built to perform regression, featuring methods for training (fit), prediction (predict), and parameter updates (update_weights) using gradient descent optimization**. During training, the slope and intercept are iteratively adjusted according to the specified learning rate and number of iterations, and the resulting regression line is compared with the actual data points. **The model outputs both the predicted scores and the learned parameters, and the results are displayed graphically by overlaying the fitted line on the scatter plot.** Additionally, the notebook extends the work with another LinearRegression class that uses animation tools to visualize how gradient descent gradually converges to the best-fit line.(linear_regression_A.gif).
+In the notebook [gradientdescent](gradientdescent.ipynb), I demonstrate the implementation of Linear Regression using Gradient Descent from scratch in Python. It uses a dataset (studentscores.csv) that records the number of study hours and corresponding exam scores, with the objective of predicting scores based on hours studied. The relationship between the two variables is first visualized through scatter plots, highlighting the linear correlation. **A custom Model class is then built to perform regression, featuring methods for training (fit), prediction (predict), and parameter updates (update_weights) using gradient descent optimization**. During training, the slope and intercept are iteratively adjusted according to the specified learning rate and number of iterations, and the resulting regression line is compared with the actual data points. **The model outputs both the predicted scores and the learned parameters, and the results are displayed graphically by overlaying the fitted line on the scatter plot.** Additionally, the notebook extends the work with another LinearRegression class that uses animation tools to visualize how gradient descent gradually converges to the [best-fit line](linear_regression_A.gif).
 
 Next, in the notebook [knnandsvmheader.ipynb](knnandsvmheader.ipynb) we focus on implementing and comparing machine learning models, specifically **K-Nearest Neighbors (KNN) and Support Vector Machines (SVM)**, for classification tasks. The models are trained using both linear and radial basis function (RBF) kernels to analyze performance differences. 
 
 We see that **for Edge AI applications, SVM is superior to KNN because it requires less memory, has faster inference, and provides better generalization**. 
 
-Once trained, an SVM only needs to store the support vectors (a subset of the training data) and the learned weights. This usually results in a compact model.
+Once trained, **an SVM only needs to store the support vectors (a subset of the training data) and the learned weights. This usually results in a compact model.**
 KNN needs to store all training samples since classification requires comparing a new input against every stored sample. This quickly becomes infeasible for edge devices with limited memory.
 
 After training, **the important model parameters—such as weights and biases—are extracted and saved into a .header file format**. This file can then be integrated into Freedom Studio, enabling deployment of the trained models on embedded RISC-V systems. Then we deploy it in Freedom Studio using the code snippet:
 
 ```
+#include <stdio.h>
+#include <metal/cpu.h>
+#include <metal/led.h>
+#include <metal/button.h>
+#include <metal/switch.h>
 
+#define RTC_FREQ 32768
+
+#define x1 0.77884104f
+#define x2 0.0293919f
+#define x3 0.03471025f
+
+#define b 42989.00816508669f
+
+float predict(float inp1, float inp2, float inp3) {
+    return x1*inp1 + x2*inp2 + x3*inp3 + b;
+}
+
+void print_float(float val) {
+    int int_part = (int)val;
+    int frac_part = (int)((val - int_part) * 100);  // 2 decimal places
+    if (frac_part < 0) frac_part *= -1;
+    printf("%d.%02d", int_part, frac_part);
+}
+
+int main(void) {
+    float rDSpend = 165349.2f; //we give test values to let it predict the results
+    float aDSpend = 136897.8f;
+    float mKSpend = 471784.1f;
+    float profit;
+
+    profit = predict(rDSpend, aDSpend, mKSpend);
+    printf("profit is :- ");
+    print_float(profit);
+
+    return 0;
+}
 ```
 
 Here I learnt how machine learning models can be developed in Python, processed into a format suitable for low-level embedded platforms, and ultimately applied in real-world hardware implementations.
 
+Next, we train the handwritten image classifier. In the [mnist_training](mnist_training.ipynb), we train and evaluate machine learning models on the MNIST handwritten digits dataset. Instead of deep neural networks, we use scikit-learn classifiers (such as LinearSVC and SVC) to recognize digits after preprocessing the 28×28 images with scaling. 
+Process flow:
+- Loads and preprocesses the MNIST dataset.
+- Flattens 28×28 images into feature vectors.
+- Applies **standardization** using `StandardScaler`.
+- Trains models such as:
+  - `LinearSVC`
+  - `SVC` with different kernels
+- Evaluates results with **accuracy scores** and **classification reports**.
+- Visualizes sample images from the dataset.
+- 
+Thus, we see that SVM models achieve strong accuracy on MNIST without deep learning.
+
+Then we finally extract the header and scaler data, as well as 10 random test images to implement in our RISC-V SOC using Freedom Studio. 
+
+**This project helped me learn the entire process of impementing an ML model on edge hardware, as well as how to process and quantize it for the same.**
+
+---
+
+## Quantization
+
+It is the process of reducing the model precision from 32 bit floating point to lower bit precisions. One of the primary challlenges of this project is aggressive quantization of the ML model to be able to fit the 16kB memory of the SoC. 
+In the section about quantization, we were introduced to different quantization techniques:
+
+*  **8 bit integer quantization**: Standard approach converting 32 bit floats to 8 bit integer with significant memory and computational speedup.
+  
+* **Mixed Precision quantization**: Using different precision for layers to optimize accuracy-efficient tradeoffs effectively.
+  
+* **Sub byte quantization**: Ultra low precisionusing 2-4 bits per parameter for extreme compression enabling deployment on severely constrained devices.
+
+  Quantization also involves different deployment scenarios like Post-training quantization, Quantization aware training, Dynamic quantization etc. 
+
+ Key Obstacles: The key obstacles associated with aggressive quantization are accuracy loss - as quantization introduces numerical errors that can degrade model performance, as well as hardware limitations since MCUs lack native support for mixed-precision operations.
+  
 
 ---
 
@@ -114,9 +184,11 @@ Here I learnt how machine learning models can be developed in Python, processed 
 
 **Google Colab** (for model training and visualization)
 
+**SiFive Freedom Studio 3.1.1** (to deploy the model on boards with SiFive Cores, as well as to simulate using QEMU)
+
 ## Future Work
 
-As I currently did not have access to the VSDSquadronPro board, I tried simulating it in QEMU. I plan to implement it in Hardware in further iterations of this project and implement more complex ML models and CNNs.
+Presently, I do not have access to the VSDSquadronPro board, I tried simulating it in QEMU. I plan to implement it in Hardware in further iterations of this project and implement more complex ML models and CNNs.
 
 
 
