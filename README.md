@@ -28,19 +28,14 @@ This project is the outcome of an intensive 10-day workshop on Edge-AI deploymen
 ## Datasets
 
 **50_Startups.csv** – Regression dataset predicting profit based on R&D, marketing, and administration costs.
-
 **Social_Network_Ads.csv** – Classification dataset predicting purchase decision based on user data.
-
 **studentscores.csv** – Simple regression dataset mapping study hours to exam scores.
-
 **MNIST dataset** (used in mnist_training.ipynb) – Digit recognition.
 
 ## Tech Stack
 
 **Python** (NumPy, Pandas, Matplotlib, Scikit-learn, TensorFlow/PyTorch for MNIST)
-
 **C/C++** (for RISC-V deployment, .h model files)
-
 **Google Colab** (for model training and visualization)
 
 
